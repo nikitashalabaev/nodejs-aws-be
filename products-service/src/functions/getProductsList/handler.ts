@@ -1,17 +1,29 @@
 import 'source-map-support/register';
 
+import { Pool } from 'pg';
+import dbConfig from '../../dbConfig';
 import { middyfy } from '../../libs/lambda';
 import { formatJSONResponse } from '../../libs/apiGateway';
 
-import { ProductsRepo } from '../../shared/ProductsRepo';
+let pool;
 
 const getProductsList = async () => {
-  try {
-    const products = await ProductsRepo.getProducts();
+  if (!pool) {
+    pool = new Pool(dbConfig);
+  }
 
-    return formatJSONResponse({ response: products });
+  const client = await pool.connect();
+
+  try {
+    const { rows } = await client.query(`
+      SELECT id, title, description, price, count FROM products p LEFT JOIN stocks s ON p.id = s.product_id
+    `);
+
+    return formatJSONResponse({ response: rows });
   } catch (e) {
     return formatJSONResponse({ statusCode: 500, response: e.message });
+  } finally {
+    client.release();
   }
 }
 
