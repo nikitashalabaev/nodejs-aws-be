@@ -2,8 +2,7 @@ import 'source-map-support/register';
 
 import { Pool } from 'pg';
 import dbConfig from '../../dbConfig';
-import { middyfy } from '../../libs/lambda';
-import { formatJSONResponse } from '../../libs/apiGateway';
+import { middyfy, formatJSONResponse } from 'shared-lib';
 
 let pool;
 

@@ -1,12 +1,10 @@
 import type { AWS } from '@serverless/typescript';
-
-import getProductsList from './src/functions/getProductsList';
-import getProductsById from './src/functions/getProductsById';
-import createProduct from './src/functions/createProduct';
-import seedProductsService from './src/functions/seedProductsService';
+import { BUCKET } from './src/constants';
+import importProductsFile from './src/functions/importProductsFile';
+import importFileParser from './src/functions/importFileParser';
 
 const serverlessConfiguration: AWS = {
-  service: 'products-service',
+  service: 'import-service',
   frameworkVersion: '2',
   custom: {
     webpack: {
@@ -23,18 +21,23 @@ const serverlessConfiguration: AWS = {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
     },
-    environment: {
-      AWS_NODEJS_CONNECTION_REUSE_ENABLED: '',
-      PG_HOST: '',
-      PG_PORT: '',
-      PG_DATABASE: '',
-      PG_USERNAME: '',
-      PG_PASSWORD: '',
-    },
     lambdaHashingVersion: '20201221',
+    iam: {
+      role: {
+        statements: [{
+          Effect: 'Allow',
+          Action: 's3:ListBucket',
+          Resource: `arn:aws:s3:::${BUCKET}`
+        },{
+          Effect: 'Allow',
+          Action: 's3:*',
+          Resource: `arn:aws:s3:::${BUCKET}/*`
+        }],
+      },
+    },
   },
   // import the function via paths
-  functions: { getProductsList, getProductsById, createProduct, seedProductsService },
+  functions: { importProductsFile, importFileParser },
 };
 
 module.exports = serverlessConfiguration;
