@@ -3,8 +3,10 @@ import 'source-map-support/register';
 import { Pool } from 'pg';
 import dbConfig from '../../dbConfig';
 import { middyfy, formatJSONResponse } from 'shared-lib';
+import ProductsRepo from '../../products.repo';
 
 let pool;
+const productRepo = new ProductsRepo();
 
 const getProductsById = async (event) => {
   if (!pool) {
@@ -12,13 +14,12 @@ const getProductsById = async (event) => {
   }
 
   const client = await pool.connect();
+  productRepo.setClient(client);
 
   try {
     const { productId } = event.pathParameters;
 
-    const { rows: [product] } = await client.query(`
-      SELECT id, title, description, price, count FROM products p LEFT JOIN stocks s ON p.id = s.product_id WHERE id='${productId}' 
-    `);
+    const product = await productRepo.findOne(productId);
 
     return product
       ? formatJSONResponse({ response: product })

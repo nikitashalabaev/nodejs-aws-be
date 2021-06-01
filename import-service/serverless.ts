@@ -1,5 +1,5 @@
 import type { AWS } from '@serverless/typescript';
-import { BUCKET } from './src/constants';
+import { BUCKET } from './constants'
 import importProductsFile from './src/functions/importProductsFile';
 import importFileParser from './src/functions/importFileParser';
 
@@ -21,6 +21,9 @@ const serverlessConfiguration: AWS = {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
     },
+    environment: {
+      CatalogItemsQueueUrl: { 'Fn::ImportValue': 'CatalogItemsQueueUrl' },
+    },
     lambdaHashingVersion: '20201221',
     iam: {
       role: {
@@ -32,6 +35,10 @@ const serverlessConfiguration: AWS = {
           Effect: 'Allow',
           Action: 's3:*',
           Resource: `arn:aws:s3:::${BUCKET}/*`
+        }, {
+          Effect: 'Allow',
+          Action: 'sqs:*',
+          Resource: { 'Fn::ImportValue': 'CatalogItemsQueueArn' },
         }],
       },
     },
