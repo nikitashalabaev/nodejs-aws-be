@@ -1,16 +1,18 @@
 import 'source-map-support/register';
-import { S3 } from 'aws-sdk';
+import { S3, SQS } from 'aws-sdk';
 import csv from 'csv-parser';
 
-import { BUCKET, PARSED_PATH, REGION, UPLOADED_PATH } from '../../constants';
+import { BUCKET, PARSED_PATH, REGION, UPLOADED_PATH } from '../../../constants';
 
 const getObjectKey = (event) => decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
 
-const importProductsFile = async (event) => {
+const importFileParser = async (event) => {
   try {
     const s3 = new S3({
       region: REGION,
     });
+
+    const sqs = new SQS();
   
     const sourceKey = getObjectKey(event);
     const destinationKey = sourceKey.replace(UPLOADED_PATH, PARSED_PATH);
@@ -34,6 +36,13 @@ const importProductsFile = async (event) => {
       .pipe(csv())
       .on('data', (data) => {
         console.log(data);
+
+        sqs.sendMessage({
+          QueueUrl: process.env.CatalogItemsQueueUrl,
+          MessageBody: JSON.stringify(data),
+        }, () => {
+          console.log('Message sent');
+        });
       });
   
     await s3.copyObject(copyParams).promise();
@@ -43,4 +52,4 @@ const importProductsFile = async (event) => {
   }
 }
 
-export const main = importProductsFile;
+export const main = importFileParser;

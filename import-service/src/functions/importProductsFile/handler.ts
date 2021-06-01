@@ -2,7 +2,7 @@ import 'source-map-support/register';
 import { S3 } from 'aws-sdk';
 import { middyfy, formatJSONResponse } from 'shared-lib';
 
-import { BUCKET, REGION, UPLOADED_PATH } from '../../constants';
+import { BUCKET, REGION, UPLOADED_PATH } from '../../../constants';
 
 const importProductsFile = async (event) => {
   try {

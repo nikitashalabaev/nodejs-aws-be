@@ -1,5 +1,5 @@
 import { handlerPath } from 'shared-lib';
-import { BUCKET, UPLOADED_PATH } from '../../constants';
+import { BUCKET, UPLOADED_PATH } from '../../../constants';
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
